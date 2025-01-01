@@ -31,10 +31,15 @@ def setup_commands(bot):
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 return ydl.extract_info(url, download=False)
 
-        vc = await ctx.author.voice.channel.connect()
+        vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+        if not vc:
+            vc = await ctx.author.voice.channel.connect()
 
         try:
-            await ctx.send("Getting video info, please wait a moment.")
+            if vc.is_playing():
+                vc.stop()
+
+            await ctx.send("Retrieving audio data, please wait a moment.")
             info = await asyncio.to_thread(get_video_info, url)
             vc.play(discord.FFmpegPCMAudio(info["url"], **ffmpeg_opts))
             await ctx.send("Playing track.")
