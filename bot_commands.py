@@ -69,7 +69,7 @@ def setup_commands(bot):
         vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         if vc:
             vc.stop()
-            asyncio.run_coroutine_threadsafe(vc.disconnect(), bot.loop)
+            await vc.disconnect()
             await ctx.send("Stopped music and disconnected from voice channel.")
         else:
             await ctx.send("I'm not in a voice channel!")
