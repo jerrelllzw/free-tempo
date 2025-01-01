@@ -3,6 +3,7 @@ import discord
 from utils import play_audio
 import yt_dlp
 
+
 def setup_commands(bot):
     """Register bot commands."""
     @bot.command()
@@ -17,7 +18,7 @@ def setup_commands(bot):
 
     @bot.command()
     async def play(ctx, url: str):
-        """Command to play a YouTube video or playlist."""
+        """Command to play a YouTube or Spotify link."""
         vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         if not vc:
             await ctx.send("I need to be in a voice channel! Use `!join` first.")
@@ -29,6 +30,23 @@ def setup_commands(bot):
             'quiet': True,
             'extract_flat': True
         }
+
+        # Check if the URL is a Spotify link
+        if "spotify.com" in url:
+            await ctx.send("Spotify link detected, fetching audio...")
+
+            try:
+                # Use yt-dlp to extract audio from Spotify URL (yt-dlp supports Spotify)
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(url, download=False)
+                    audio_url = info['url']
+
+                await ctx.send(f"Now playing: {info['title']}")
+                await play_audio(vc, audio_url)
+
+            except Exception as e:
+                await ctx.send(f"Error: {e}")
+            return
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
