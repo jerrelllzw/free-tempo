@@ -1,6 +1,6 @@
 from discord.ext import commands
 import discord
-from utils import play_audio
+from utils import play_audio, pause_audio, resume_audio, skip_audio, stop_audio
 import yt_dlp
 
 
@@ -64,6 +64,46 @@ def setup_commands(bot):
 
         except Exception as e:
             await ctx.send(f"Error: {e}")
+
+    @bot.command()
+    async def pause(ctx):
+        """Pause the current track."""
+        vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+        if vc and vc.is_playing():
+            await pause_audio(vc)
+            await ctx.send("Paused the track.")
+        else:
+            await ctx.send("No track is currently playing.")
+
+    @bot.command()
+    async def resume(ctx):
+        """Resume the current track."""
+        vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+        if vc and vc.is_paused():
+            await resume_audio(vc)
+            await ctx.send("Resumed the track.")
+        else:
+            await ctx.send("No track is currently paused.")
+
+    @bot.command()
+    async def skip(ctx):
+        """Skip the current track."""
+        vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+        if vc and vc.is_playing():
+            await skip_audio(vc)
+            await ctx.send("Skipped the track.")
+        else:
+            await ctx.send("No track is currently playing.")
+
+    @bot.command()
+    async def stop(ctx):
+        """Stop the music and disconnect from the voice channel."""
+        vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+        if vc:
+            await stop_audio(vc)
+            await ctx.send("Stopped the music and disconnected from the voice channel.")
+        else:
+            await ctx.send("I'm not in a voice channel!")
 
     @bot.command()
     async def leave(ctx):

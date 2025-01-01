@@ -24,3 +24,28 @@ async def play_audio(vc, url):
 
     except Exception as e:
         print(f"Error in play_audio: {e}")
+
+
+async def pause_audio(vc):
+    """Pause the current audio."""
+    if vc.is_playing():
+        vc.pause()
+
+
+async def resume_audio(vc):
+    """Resume the current audio."""
+    if vc.is_paused():
+        vc.resume()
+
+
+async def skip_audio(vc):
+    """Skip the current audio."""
+    if vc.is_playing():
+        vc.stop()
+
+
+async def stop_audio(vc):
+    """Stop and disconnect."""
+    if vc:
+        vc.stop()
+        await vc.disconnect()
