@@ -31,18 +31,13 @@ def setup_commands(bot):
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 return ydl.extract_info(url, download=False)
 
-        def after_playing(err):
-            if err:
-                print(f"Error playing audio: {err}")
-            asyncio.run_coroutine_threadsafe(vc.disconnect(), bot.loop)
-
         vc = await ctx.author.voice.channel.connect()
 
         try:
+            await ctx.send("Getting video info, please wait a moment.")
             info = await asyncio.to_thread(get_video_info, url)
-            vc.play(discord.FFmpegPCMAudio(
-                info["url"], **ffmpeg_opts), after=after_playing)
-            await ctx.send("Playing the track.")
+            vc.play(discord.FFmpegPCMAudio(info["url"], **ffmpeg_opts))
+            await ctx.send("Playing track.")
         except Exception as e:
             await ctx.send(f"Error: {e}")
 
@@ -51,7 +46,7 @@ def setup_commands(bot):
         vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         if vc and vc.is_playing():
             vc.pause()
-            await ctx.send("Paused the track.")
+            await ctx.send("Paused track.")
         else:
             await ctx.send("No track is currently playing.")
 
@@ -60,7 +55,7 @@ def setup_commands(bot):
         vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         if vc and vc.is_paused():
             vc.resume()
-            await ctx.send("Resumed the track.")
+            await ctx.send("Resumed track.")
         else:
             await ctx.send("No track is currently paused.")
 
@@ -69,7 +64,7 @@ def setup_commands(bot):
         vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         if vc:
             vc.stop()
-            await vc.disconnect()
-            await ctx.send("Stopped the music and disconnected from the voice channel.")
+            asyncio.run_coroutine_threadsafe(vc.disconnect(), bot.loop)
+            await ctx.send("Stopped music and disconnected from voice channel.")
         else:
             await ctx.send("I'm not in a voice channel!")
