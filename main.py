@@ -18,10 +18,5 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # Set up the commands
 setup_commands(bot)
 
-
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user}')
-
 # Run the bot
 bot.run(BOT_TOKEN)
