@@ -3,7 +3,6 @@ import discord
 from utils import play_audio
 import yt_dlp
 
-
 def setup_commands(bot):
     """Register bot commands."""
     @bot.command()
@@ -17,8 +16,8 @@ def setup_commands(bot):
             await ctx.send("You need to be in a voice channel first!")
 
     @bot.command()
-    async def play(ctx, playlist_url: str):
-        """Command to play a YouTube playlist."""
+    async def play(ctx, url: str):
+        """Command to play a YouTube video or playlist."""
         vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         if not vc:
             await ctx.send("I need to be in a voice channel! Use `!join` first.")
@@ -26,25 +25,25 @@ def setup_commands(bot):
 
         ydl_opts = {
             'format': 'bestaudio/best',
-            'noplaylist': False,
+            'noplaylist': True,  # Default to single video; handle playlists manually
             'quiet': True,
             'extract_flat': True
         }
 
         try:
-            # Fetch playlist items
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(playlist_url, download=False)
-                if "entries" not in info:
-                    await ctx.send("This doesn't seem to be a playlist.")
-                    return
+                info = ydl.extract_info(url, download=False)
 
-                entries = info['entries']
-                for entry in entries:
-                    url = entry['url']
+                if "entries" in info:  # Playlist detected
+                    await ctx.send(f"Playlist detected: {info['title']}")
+                    for entry in info["entries"]:
+                        video_url = entry["url"]
+                        await play_audio(vc, video_url)
+                    await ctx.send("Finished playing the playlist!")
+                else:  # Single video
+                    await ctx.send(f"Now playing: {info['title']}")
                     await play_audio(vc, url)
 
-                await ctx.send("Finished playing the playlist!")
         except Exception as e:
             await ctx.send(f"Error: {e}")
 
